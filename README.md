@@ -25,3 +25,7 @@ Aplikasi ini dibuat untuk menyelesaikan masalah ketidakpraktisan saat nitip maka
 ## 👤 Author
 Crafted with ❤️ by **WaktuLuangProject**  
 *Building practical digital solutions for everyday problems.*
+
+
+![Demo Aplikasi](https://github.com/user-attachments/assets//752ff064-db0e-41ce-a249-bb16f38a4e48)
+
