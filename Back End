@@ -1,0 +1,66 @@
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('Titip Anything')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function tambahPesanan(data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Titipan");
+  sheet.appendRow([
+    new Date(),
+    data.nama,
+    data.lantai || "-",
+    data.pesanan,
+    data.metodeBayar,
+    0,
+    "Pending",
+    ""
+  ]);
+  return { success: true, message: "Pesanan berhasil terkirim!" };
+}
+
+function getPesananPending() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Titipan");
+  if (!sheet) {
+    // Kalau nama sheet beda, ambil sheet pertama otomatis
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  }
+  
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return []; // Cuma ada header
+  
+  // Ambil semua data dari baris 2 sampai baris paling bawah
+  var data = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+  var result = [];
+  
+  for (var i = 0; i < data.length; i++) {
+    var nama = data[i][1] ? data[i][1].toString().trim() : "";
+    var status = data[i][6] ? data[i][6].toString().trim().toLowerCase() : "";
+    
+    // Tampilkan JIKA ada nama DAN statusnya BUKAN "selesai" 
+    // (Jadi status kosong, "Pending", "pending ", dll TETAP AKAN MUNCUL)
+    if (nama !== "" && status !== "selesai") {
+      result.push({
+        rowNum: i + 2, // Baris asli di Sheet (karena mulai dari baris 2)
+        nama: data[i][1],
+        lantai: data[i][2],
+        pesanan: data[i][3],
+        metodeBayar: data[i][4],
+        hargaAsli: data[i][5] || ""
+      });
+    }
+  }
+  
+  return result;
+}
+function selesaikanPesanan(rowNum, hargaAsli, catatan) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Titipan");
+  if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  
+  sheet.getRange(rowNum, 6).setValue(hargaAsli); // Mengisi Kolom F (Harga Asli)
+  sheet.getRange(rowNum, 7).setValue("Selesai");   // Mengubah Kolom G (Status)
+  sheet.getRange(rowNum, 8).setValue(catatan || ""); // Mengisi Kolom H (Catatan)
+  
+  return { success: true, message: "Pesanan berhasil diselesaikan!" };
+}
